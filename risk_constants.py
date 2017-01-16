@@ -1,0 +1,9 @@
+#premium risk constants
+
+NO_RISK = 0
+LOW_RISK = 1
+MODERATE_RISK = 2
+HIGH_RISK = 3
+EXTREME_RISK = 20
+HIGH_PREMIUM = -1
+

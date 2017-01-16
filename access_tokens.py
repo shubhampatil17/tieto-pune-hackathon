@@ -1,0 +1,7 @@
+viola_access_token = 'EAAY4ggzMX7QBAM3qWv6M10d5WxX22TikRnFrdYcIjQA4EsIiz5ejCcFhMbh6bGFKKTTV1D58NH4XOGK5JvWTAp7RZCLp6K9WUXpiB5YaLFrS9mTcbYVCVEA5lHhZBG7TQbK8w059Rp7LlLp82z2ZBZCYZAp5KxvBxKkZBDSVXzMgZDZD'
+wit_access_token = '6Q7WMYOW2CARRJVJ7JYFK2O4PGPF2LK7'
+tweepy_consumer_key = 'Zp5CPsinrcIpkzf7NjFqNyDq5'
+tweepy_secret_key = 'cMTEQ5CqG9jWg6W6rM8EN2CwAfMNF9TEi1WAkRwrI0BUH2cupF'
+webhose_access_token = '51869c41-7a44-4626-8d6a-2e6a165dd006'
+india_crime_access_token = '76815049884e0a8354aef0372ecd3579'
+weather_access_token = '65b093b8f06e18e183b0b871142ef37f'

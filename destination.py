@@ -1,5 +1,5 @@
 from weather import *
-from crime import *
+from crime_stats import *
 from twitter_handler import *
 from news_handler import *
 import risk_constants

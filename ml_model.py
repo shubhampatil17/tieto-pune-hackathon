@@ -46,6 +46,10 @@ tweet_clf_extra = Pipeline([('vect', CountVectorizer()),
                       ('tfidf', TfidfTransformer()),
                       ('clf', svm.LinearSVC())])
 
+tweet_clf.fit(d1_training_X, d1_training_Y)
+tweet_clf_extra.fit(d2_training_X, d2_training_Y)
+sentiment_clf.fit(sentiment_X, sentiment_Y)
+
 def train_machine_learning_models():
     print("STATUS : Training machine learning classfiers ...")
     tweet_clf.fit(d1_training_X, d1_training_Y)

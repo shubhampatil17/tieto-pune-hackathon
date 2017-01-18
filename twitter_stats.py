@@ -13,6 +13,7 @@ from models import Tweets
 auth = tweepy.AppAuthHandler(access_tokens.tweepy_consumer_key, access_tokens.tweepy_secret_key)
 twitter_handler = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
 
+
 def fetch_tweets_by_location(location):
     geocode = geocoder.google(location)
     radius = vincenty(tuple(geocode.bbox['northeast']), tuple(geocode.bbox['southwest'])).miles
@@ -30,47 +31,40 @@ def fetch_tweets_by_location(location):
             within="{}mi".format(radius),
             # result_type='recent',
             count=100,
-            since=(datetime.now().date() - timedelta(days=7)).strftime('%Y-%m-%d'),
+            since=(datetime.now().date() - timedelta(days=3)).strftime('%Y-%m-%d'),
             until=(datetime.now().date()).strftime('%Y-%m-%d'),
             lang='en'
         ).items():
             tweets.append(tweet.text)
 
-        # tweets_data = Tweets(location = location.lower(), tweets = tweets)
-        # tweets_data.save()
+        tweets_data = Tweets(location = location.lower(), tweets = tweets)
+        tweets_data.save()
 
-    print(len(tweets))
     return tweets
 
-def percentage_of_crisis_tweets(location):
-    tweets = get_tweets(location)
-    informative_prediction = ml_model.tweet_clf_extra.predict(tweets)
-    filtered_tweets = []
 
-    for i in range(len(informative_prediction)):
-        if informative_prediction[i] == 'Related and informative':
-            filtered_tweets.append(tweets[i])
+def get_crisis_risk_from_twitter_by_location(location):
+    tweets = fetch_tweets_by_location(location)
+    if len(tweets):
+        informative_tweets_clf = ml_model.tweet_clf_extra.predict(tweets)
+        informative_tweets = [tweets[x] for x in range(len(tweets)) if informative_tweets_clf[x] == 'Related and informative']
+        crisis_tweets_clf = ml_model.tweet_clf.predict(informative_tweets)
+        # crisis_tweets = [informative_tweets[x] for x in range(len(informative_tweets)) if crisis_tweets_clf[x] == 'on-topic']
+        stats = collections.Counter(crisis_tweets_clf)
+        on_topic = stats['on-topic'] if 'on-topic' in stats else 0
+        crisis_tweets_percentage = (on_topic * 100)/(len(tweets))
 
-    crisis_prediction = ml_model.tweet_clf.predict(filtered_tweets)
-    stats = collections.Counter(crisis_prediction)
-    on_topic = stats['on-topic'] if 'on-topic' in stats else 0
-    off_topic = stats['off-topic'] if 'off-topic' in stats else 0
+        if crisis_tweets_percentage > 60:
+            risk = risk_constants.HIGH_RISK
+        elif crisis_tweets_percentage > 30:
+            risk = risk_constants.MODERATE_RISK
+        else:
+            risk = risk_constants.LOW_RISK
 
-    risk_percentage = (on_topic * 100)/(on_topic + off_topic)
-
-    if risk_percentage > 60:
-        risk = risk_constants.HIGH_RISK
-    elif risk_percentage > 30 and risk_percentage < 60:
-        risk = risk_constants.MODERATE_RISK
     else:
         risk = risk_constants.LOW_RISK
 
     return risk
-    # heuristically_filtered_tweets = []
-    # for i in range(len(classified_tweets)):
-    #     if classified_tweets[i] == 'on-topic':
-    #         heuristically_filtered_tweets.append(tweets[i])
-
 
 crisis_keywords = [
     'bridge',
@@ -100,5 +94,3 @@ crisis_keywords = [
     'casualty',
     'missing'
 ]
-
-fetch_tweets_by_location('oxford')

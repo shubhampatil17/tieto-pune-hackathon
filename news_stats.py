@@ -31,18 +31,17 @@ def get_crisis_risk_from_news_by_location(location):
         stats = collections.Counter(crisis_news_clf)
         on_topic = stats['on-topic'] if 'on-topic' in stats else 0
         crisis_news_percentage = (on_topic * 100)/(len(headlines))
-        for news in informative_news:
-            print(news)
-        print(stats)
-        for news in crisis_news:
-            print(news)
-        print(crisis_news_percentage)
-        if crisis_news_percentage > 60:
+
+        if crisis_news_percentage > 80:
+            risk = risk_constants.EXTREME_RISK
+        elif crisis_news_percentage > 60:
             risk = risk_constants.HIGH_RISK
         elif crisis_news_percentage > 30:
             risk = risk_constants.MODERATE_RISK
-        else:
+        elif crisis_news_percentage > 5:
             risk = risk_constants.LOW_RISK
+        else:
+            risk = risk_constants.NO_RISK
 
     else:
         risk = risk_constants.LOW_RISK

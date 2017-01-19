@@ -54,12 +54,16 @@ def get_crisis_risk_from_twitter_by_location(location):
         on_topic = stats['on-topic'] if 'on-topic' in stats else 0
         crisis_tweets_percentage = (on_topic * 100)/(len(tweets))
 
-        if crisis_tweets_percentage > 60:
+        if crisis_tweets_percentage > 80:
+            risk = risk_constants.EXTREME_RISK
+        elif crisis_tweets_percentage > 60:
             risk = risk_constants.HIGH_RISK
         elif crisis_tweets_percentage > 30:
             risk = risk_constants.MODERATE_RISK
-        else:
+        elif crisis_tweets_percentage > 5:
             risk = risk_constants.LOW_RISK
+        else:
+            risk = risk_constants.NO_RISK
 
     else:
         risk = risk_constants.LOW_RISK

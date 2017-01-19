@@ -29,5 +29,3 @@ def get_weather_risk_for_location(location, start_date, duration):
 
     weathers_risks = [y for x in weathers for y in weather_condition_categories if x in weather_condition_categories[y]]
     return max(weathers_risks)
-
-get_weather_risk_for_location('oxford', datetime(2017, 1, 22), 1)

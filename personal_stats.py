@@ -13,8 +13,10 @@ def get_risk_by_age(age):
         risk = risk_constants.LOW_RISK
     elif age < 60:
         risk = risk_constants.MODERATE_RISK
-    else:
+    elif age < 90:
         risk = risk_constants.HIGH_RISK
+    else:
+        risk = risk_constants.EXTREME_RISK
 
     return risk
 

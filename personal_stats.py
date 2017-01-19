@@ -3,6 +3,7 @@ import risk_constants
 
 def get_risk_by_marital_status(status):
     risk = risk_constants.LOW_RISK if status.lower() == "married" else risk_constants.MODERATE_RISK
+    print('STATUS : Risk for marital status as {} - {}'.format(status, risk_constants.risk_status[risk]))
     return risk
 
 
@@ -18,25 +19,5 @@ def get_risk_by_age(age):
     else:
         risk = risk_constants.EXTREME_RISK
 
+    print('STATUS : Age risk for age {} - {}'.format(age, risk_constants.risk_status[risk]))
     return risk
-
-#
-# def get_stay_risk(duration):
-#     if duration < 10 :
-#         stay_risk = risk_constants.LOW_RISK
-#     elif duration < 20 :
-#         stay_risk = risk_constants.MODERATE_RISK
-#     else :
-#         stay_risk = risk_constants.HIGH_RISK
-#     print "Duration of stay risk/ Total trip length risk : ",stay_risk
-#     return stay_risk
-#
-# def get_trip_type_risk(type):
-#     if type == 1:
-#         type_risk = risk_constants.LOW_RISK
-#     elif type <= 3:
-#         type_risk = risk_constants.MODERATE_RISK
-#     else :
-#         type_risk = risk_constants.HIGH_RISK
-#     print "Trip Type Risk (Single/Maultiplt) : ",type_risk
-#     return type_risk

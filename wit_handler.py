@@ -44,7 +44,6 @@ def add_trip_details(context, entities):
         if 'validDate' in context:
             del context['validDate']
 
-    print context
     return context
 
 def add_missing_date_to_trip(context, entities):
@@ -56,7 +55,6 @@ def add_missing_date_to_trip(context, entities):
         if 'missingDate' in context:
             del context['missingDate']
 
-    print context
     return context
 
 
@@ -89,7 +87,6 @@ def get_customised_premium(context, entities):
     return context
 
 def send(request, response):
-    print response['text']
     return request['context']
 
 

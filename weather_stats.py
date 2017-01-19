@@ -15,6 +15,7 @@ owm = pyowm.OWM(access_tokens.weather_access_token)
 
 
 def get_weather_risk_for_location(location, start_date, duration):
+    print('STATUS : Analyzing local weather ...')
     forecaster = owm.daily_forecast(location)
     forecast = forecaster.get_forecast()
     # forecast_start_date = datetime.now() - timedelta(days=1)
@@ -28,4 +29,5 @@ def get_weather_risk_for_location(location, start_date, duration):
         weathers = [forecaster.get_weather_at(start_date + timedelta(days=day)).get_weather_code() for day in range(int(((trip_end_date if trip_end_date < forecast_end_date else forecast_end_date) - trip_start_date).days) + 1)]
 
     weathers_risks = [y for x in weathers for y in weather_condition_categories if x in weather_condition_categories[y]]
+    print('STATUS : Weather risk at destination {} - {}'.format(location, risk_constants.risk_status[max(weathers_risks)]))
     return max(weathers_risks)

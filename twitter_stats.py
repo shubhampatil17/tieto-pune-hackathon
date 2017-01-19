@@ -25,35 +25,37 @@ def fetch_tweets_by_location(location):
         tweets = []
         for tweet in tweepy.Cursor(
             twitter_handler.search,
-            q=urllib.parse.urlencode({
-                "near" : location
-            }),
+            q=urllib.parse.quote('near:{} -RT'.format(location)),
             within="{}mi".format(radius),
-            # result_type='recent',
-            count=100,
+            result_type='recent',
+            # count=100,
             since=(datetime.now().date() - timedelta(days=3)).strftime('%Y-%m-%d'),
             until=(datetime.now().date()).strftime('%Y-%m-%d'),
             lang='en'
         ).items():
             tweets.append(tweet.text)
 
-        tweets_data = Tweets(location = location.lower(), tweets = tweets)
-        tweets_data.save()
+        # tweets_data = Tweets(location = location.lower(), tweets = tweets)
+        # tweets_data.save()
 
     return tweets
 
 
 def get_crisis_risk_from_twitter_by_location(location):
+    print('STATUS : Analyzing Twitter ...')
     tweets = fetch_tweets_by_location(location)
     if len(tweets):
         informative_tweets_clf = ml_model.tweet_clf_extra.predict(tweets)
         informative_tweets = [tweets[x] for x in range(len(tweets)) if informative_tweets_clf[x] == 'Related and informative']
         crisis_tweets_clf = ml_model.tweet_clf.predict(informative_tweets)
-        # crisis_tweets = [informative_tweets[x] for x in range(len(informative_tweets)) if crisis_tweets_clf[x] == 'on-topic']
+        crisis_tweets = [informative_tweets[x] for x in range(len(informative_tweets)) if crisis_tweets_clf[x] == 'on-topic']
         stats = collections.Counter(crisis_tweets_clf)
+        print(stats)
         on_topic = stats['on-topic'] if 'on-topic' in stats else 0
         crisis_tweets_percentage = (on_topic * 100)/(len(tweets))
-
+        print(informative_tweets)
+        print(crisis_tweets)
+        print('STATUS : Percentage of tweets from destination {} related to crisis - {}% '.format(location, crisis_tweets_percentage))
         if crisis_tweets_percentage > 80:
             risk = risk_constants.EXTREME_RISK
         elif crisis_tweets_percentage > 60:
@@ -68,6 +70,7 @@ def get_crisis_risk_from_twitter_by_location(location):
     else:
         risk = risk_constants.LOW_RISK
 
+    print('STATUS : Crisis (Twitter) risk at destination {} - {}'.format(location, risk_constants.risk_status[risk]))
     return risk
 
 crisis_keywords = [

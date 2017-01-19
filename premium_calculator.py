@@ -1,50 +1,49 @@
-from destination import get_destination_risk
-from risk_calculator import get_stay_risk
-from risk_calculator import get_trip_type_risk
-from risk_calculator import get_status_risk
-from risk_calculator import get_age_risk
-import risk_constants
-from datetime import datetime
+from risk_calculator import get_aggregate_premium_rate_for_place
 
-def calculate_risk(type, duration, destination, age, marital_status, start_date):
-    destination_risk = get_destination_risk(destination,start_date)
-    if  destination_risk>= risk_constants.EXTREME_RISK :
-        return risk_constants.HIGH_PREMIUM
-    total_risk = get_trip_type_risk(type) + get_stay_risk(duration) + destination_risk + get_status_risk(marital_status) + get_age_risk(age)
-    return total_risk
-
-#Input will be dict
-#Eg, {'Type':1,'Stay':10,'Age':25,'Status':'Married', 'Destination': 'London,uk', 'Start_Date':datetime object, 'Total_Cost_of_Trip':20000, 'Cost_of_Premium':20000}
-
-def premium_calculator(data):
-    total_risk=0
-    type=len(data)
-    for client_data in data:
-        total_risk += calculate_risk(client_data['Type'],client_data['Stay'],client_data['Destination'],client_data['Age'], client_data['Status'], client_data['Start_Date'])
-        print "Total Risk", total_risk
-    total_risk/=type
-
-    if total_risk >= 35 or total_risk == risk_constants.HIGH_PREMIUM:
-        #10%
-        premium_amount=client_data['Cost_of_Premium']*0.10
-    if total_risk >= 28:
-        #8%
-        premium_amount=client_data['Cost_of_Premium']*0.08
-    if total_risk >= 22:
-        #7%
-        premium_amount=client_data['Cost_of_Premium']*0.07
-    if total_risk >= 16:
-        #6%
-        premium_amount=client_data['Cost_of_Premium']*0.06
-    if total_risk >= 11:
-        #4%
-        premium_amount=client_data['Cost_of_Premium']*0.04
+def preprocess_trip_plan(trip_plan):
+    if 'trip_schedule' in trip_plan and 'age' in trip_plan and 'marital_status' in trip_plan and 'trip_cost' in trip_plan:
+        for x in range(len(trip_plan['trip_schedule']) - 1):
+            trip_plan['trip_schedule'][x]['duration'] = int((trip_plan['trip_schedule'][x+1]['start_date'] - trip_plan['trip_schedule'][x]['start_date']).days)
+            response = True
     else:
-        #3%
-        premium_amount = client_data['Cost_of_Premium'] * 0.03
-    print "Premium Amount",premium_amount
-    return premium_amount
+        response = False
 
-client_data = [{'Type':2,'Stay':10,'Age':25,'Status':'Married', 'Destination': "Totton", 'Start_Date':datetime.now(), 'Total_Cost_of_Trip':20000, 'Cost_of_Premium':20000},{'Type':2,'Stay':10,'Age':25,'Status':'Married', 'Destination': "Royal Tunbridge Wells", 'Start_Date':datetime.now(), 'Total_Cost_of_Trip':20000, 'Cost_of_Premium':20000}]
+    return response, trip_plan
 
-premium_calculator(client_data)
+
+def calculate_premium_for_trip(trip_plan):
+    response, trip_plan = preprocess_trip_plan(trip_plan)
+
+    print('STATUS : Your trip plan is as follows ...')
+
+    print('DATA : Trip plan')
+    for trip in trip_plan['trip_schedule'][:-1]:
+        print(trip)
+
+    print('DATA : Age - {}'.format(trip_plan['age']))
+    print('DATA : Marital Status - {}'.format(trip_plan['marital_status']))
+    print('DATA : Trip cost - {}'.format(trip_plan['trip_cost']))
+
+    if response:
+        total_days_of_trip = 0
+        premium_rate_per_destination = []
+
+        for trip in trip_plan['trip_schedule'][:-1]:
+            total_days_of_trip += trip['duration']
+            premium_rate_per_destination.append(get_aggregate_premium_rate_for_place(
+                trip['destination'],
+                trip['start_date'],
+                trip['duration'],
+                trip_plan['age'],
+                trip_plan['marital_status']
+            ))
+
+        cost_per_day_per_destination = trip_plan['trip_cost']/(total_days_of_trip*(len(trip_plan['trip_schedule'])-1))
+        premium_per_destination = [cost_per_day_per_destination * trip_plan['trip_schedule'][x]['duration'] * premium_rate_per_destination[x] for x in range(len(trip_plan['trip_schedule'])-1)]
+        print('STATUS : Premium distribution per destination')
+        print(premium_per_destination)
+        print('STATUS : CUSTOMIZED PREMIUM FOR COMPLETE TRIP - {}'.format(sum(premium_per_destination)))
+
+    else:
+        print('EXCEPTION : Cannot proceed. Missing details in trip plan')
+        print('REQUIRED : TRIP SCHEDULE, AGE, MARITAL STATUS, TRIP COST')

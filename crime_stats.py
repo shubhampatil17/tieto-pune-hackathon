@@ -29,7 +29,7 @@ def fetch_crime_data(geocode, date=None):
 
 
 def get_crime_risk_by_location(location):
-    print('STATUS : Calculating crime risk for location {} ...'.format(location))
+    print('STATUS : Analyzing local crime rate ...')
     geocode = geocoder.google(location)
     total_crimes = 0
     crime_categories = [
@@ -54,6 +54,7 @@ def get_crime_risk_by_location(location):
 
     population = Population.objects(country = geocode.country.lower(), city = location.lower()).first().population
     crime_rate = (total_crimes/population)*1000
+    print('STATUS : Crime rate at destination {} per 1000 capita - {} '.format(location, crime_rate))
 
     if crime_rate > 200:
         risk = risk_constants.EXTREME_RISK
@@ -66,5 +67,5 @@ def get_crime_risk_by_location(location):
     else:
         risk = risk_constants.NO_RISK
 
-    print('STATUS : Crime risk for {} is {}.'.format(location, risk))
+    print('STATUS : Crime risk at destination {} - {}.'.format(location, risk_constants.risk_status[risk]))
     return risk

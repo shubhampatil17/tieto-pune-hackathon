@@ -22,6 +22,7 @@ def fetch_news_by_location(location):
 
 
 def get_crisis_risk_from_news_by_location(location):
+    print('STATUS : Analyzing local news headlines ...')
     headlines = fetch_news_by_location(location)
     if len(headlines):
         informative_news_clf = ml_model.tweet_clf_extra.predict(headlines)
@@ -31,6 +32,7 @@ def get_crisis_risk_from_news_by_location(location):
         stats = collections.Counter(crisis_news_clf)
         on_topic = stats['on-topic'] if 'on-topic' in stats else 0
         crisis_news_percentage = (on_topic * 100)/(len(headlines))
+        print('STATUS : Percentage of news from destination {} related to crisis - {}% '.format(location, crisis_news_percentage))
 
         if crisis_news_percentage > 80:
             risk = risk_constants.EXTREME_RISK
@@ -46,4 +48,5 @@ def get_crisis_risk_from_news_by_location(location):
     else:
         risk = risk_constants.LOW_RISK
 
+    print('STATUS : Crisis (News) risk at destination {} - {}'.format(location, risk_constants.risk_status[risk]))
     return risk

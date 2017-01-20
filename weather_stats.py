@@ -1,5 +1,5 @@
 import pyowm
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import risk_constants
 import access_tokens
 
@@ -26,7 +26,7 @@ def get_weather_risk_for_location(location, start_date, duration):
     if trip_start_date > forecast_end_date:
         weathers = [weather.get_weather_code() for weather in forecast.get_weathers()]
     else:
-        weathers = [forecaster.get_weather_at(start_date + timedelta(days=day)).get_weather_code() for day in range(int(((trip_end_date if trip_end_date < forecast_end_date else forecast_end_date) - trip_start_date).days) + 1)]
+        weathers = [forecaster.get_weather_at(start_date + timedelta(days=day, hours=12)).get_weather_code() for day in range(int(((trip_end_date if trip_end_date < forecast_end_date else forecast_end_date) - trip_start_date).days) + 1)]
 
     weathers_risks = [y for x in weathers for y in weather_condition_categories if x in weather_condition_categories[y]]
     print('STATUS : Weather risk at destination {} - {}'.format(location, risk_constants.risk_status[max(weathers_risks)]))

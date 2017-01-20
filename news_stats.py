@@ -30,6 +30,8 @@ def get_crisis_risk_from_news_by_location(location):
         crisis_news_clf = ml_model.tweet_clf.predict(informative_news)
         crisis_news = [informative_news[x] for x in range(len(informative_news)) if crisis_news_clf[x] == 'on-topic']
         stats = collections.Counter(crisis_news_clf)
+        print(stats)
+        print(crisis_news)
         on_topic = stats['on-topic'] if 'on-topic' in stats else 0
         crisis_news_percentage = (on_topic * 100)/(len(headlines))
         print('STATUS : Percentage of news from destination {} related to crisis - {}% '.format(location, crisis_news_percentage))

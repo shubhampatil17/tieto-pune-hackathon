@@ -51,10 +51,9 @@ def get_crisis_risk_from_twitter_by_location(location):
         crisis_tweets = [informative_tweets[x] for x in range(len(informative_tweets)) if crisis_tweets_clf[x] == 'on-topic']
         stats = collections.Counter(crisis_tweets_clf)
         print(stats)
+        print(crisis_tweets)
         on_topic = stats['on-topic'] if 'on-topic' in stats else 0
         crisis_tweets_percentage = (on_topic * 100)/(len(tweets))
-        print(informative_tweets)
-        print(crisis_tweets)
         print('STATUS : Percentage of tweets from destination {} related to crisis - {}% '.format(location, crisis_tweets_percentage))
         if crisis_tweets_percentage > 80:
             risk = risk_constants.EXTREME_RISK

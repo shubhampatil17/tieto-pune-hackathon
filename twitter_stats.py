@@ -57,9 +57,9 @@ def get_crisis_risk_from_twitter_by_location(location):
         print('STATUS : Percentage of tweets from destination {} related to crisis - {}% '.format(location, crisis_tweets_percentage))
         if crisis_tweets_percentage > 80:
             risk = risk_constants.EXTREME_RISK
-        elif crisis_tweets_percentage > 60:
+        elif crisis_tweets_percentage > 50:
             risk = risk_constants.HIGH_RISK
-        elif crisis_tweets_percentage > 30:
+        elif crisis_tweets_percentage > 20:
             risk = risk_constants.MODERATE_RISK
         elif crisis_tweets_percentage > 5:
             risk = risk_constants.LOW_RISK

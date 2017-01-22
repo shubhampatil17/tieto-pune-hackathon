@@ -1,7 +1,14 @@
 from risk_calculator import get_aggregate_premium_rate_for_place
+from datetime import datetime
+
 
 def preprocess_trip_plan(trip_plan):
     if 'trip_schedule' in trip_plan and 'age' in trip_plan and 'marital_status' in trip_plan and 'trip_cost' in trip_plan:
+        for x in range(len(trip_plan['trip_schedule'])):
+            trip_plan['trip_schedule'][x]['start_date'] = datetime.strptime(trip_plan['trip_schedule'][x]['start_date'], '%Y-%m-%dT%H:%M:%S')
+
+        print(trip_plan)
+
         for x in range(len(trip_plan['trip_schedule']) - 1):
             trip_plan['trip_schedule'][x]['duration'] = int((trip_plan['trip_schedule'][x+1]['start_date'] - trip_plan['trip_schedule'][x]['start_date']).days)
             response = True
@@ -47,3 +54,5 @@ def calculate_premium_for_trip(trip_plan):
     else:
         print('EXCEPTION : Cannot proceed. Missing details in trip plan')
         print('REQUIRED : TRIP SCHEDULE, AGE, MARITAL STATUS, TRIP COST')
+
+    return sum(premium_per_destination)

@@ -1,120 +1,183 @@
 from wit import Wit
 import access_tokens
+from premium_calculator import calculate_premium_for_trip
 import facebook_custom_actions
-import person_details
 import premium_calculator
 import facebook_custom_actions
 from main import session
+from datetime import datetime
+import copy
 
-def check_insurance_type_validity(context, entities):
-    if entities:
-        if 'insuranceType' not in entities:
-            context['missingInsuranceType'] = True
+def check_insurance_type_validity(request):
+    context = request['context']
+    entities = request['entities']
+
+    if 'insuranceType' not in entities:
+        context['missing_insurance_type'] = True
+    else:
+        context = {}
+
+        if not entities['insuranceType'][0]['value'].lower() == 'travel':
+            context['invalid_insurance_type'] = True
         else:
-            if 'missingInsuranceType' in context:
-                del context['missingInsuranceType']
-
-            if not entities['insuranceType'][0]['value'].lower() == 'travel':
-                context['insuranceValidity'] = 'invalid'
-                facebook_custom_actions.send_plain_text_message(context['user_id'], "Sorry ! I can't help with that. I am a travel insurance bot")
-            else:
-                context['insuranceValidity'] = 'valid'
-                facebook_custom_actions.send_plain_text_message(context['user_id'], "Sure ! Please tell me about your trip plans. I want to know on which date where are you going to be presented during your trip.")
+            context['valid_insurance_type'] = True
 
     return context
 
 
-def add_trip_details(context, entities):
-    if 'tripPlan' not in context:
-        context['tripPlan'] = {}
+def add_trip_plan(request):
+    context = request['context']
+    entities = request['entities']
+
+    print(entities)
+
+    if 'trip_schedule' not in context:
+        context['trip_schedule'] = []
 
     if 'location' in entities:
-        context['currentLocation'] = entities['location'][0]['value']
+        context['current_destination'] = entities['location'][0]['value'].lower()
 
     if 'datetime' in entities:
-        context['tripPlan'][context['currentLocation']] = entities['datetime'][0]['value']
-        context['validDate'] = True
+        context['current_start_date'] = entities['datetime'][0]['value'].split('.')[0]
 
-        if 'missingDate' in context:
-            del context['missingDate']
-    else:
-        context['tripPlan'][context['currentLocation']] = None
-        context['missingDate'] = True
+    if 'current_destination' in context and 'current_start_date' in context:
+        if 'missing_location' in context:
+            del context['missing_location']
 
-        if 'validDate' in context:
-            del context['validDate']
+        if 'missing_date' in context:
+            del context['missing_date']
 
+        context['valid_trip_plan'] = True
+        context['trip_schedule'].append({
+            'destination': context['current_destination'],
+            'start_date': context['current_start_date']
+        })
+
+        del context['current_destination']
+        del context['current_start_date']
+
+    elif 'current_destination' not in context:
+        if 'valid_trip_plan' in context:
+            del context['valid_trip_plan']
+
+        if 'missing_date' in context:
+            del context['missing_date']
+
+        context['missing_location'] = True
+
+    elif 'current_start_date' not in context:
+        if 'valid_trip_plan' in context:
+            del context['valid_trip_plan']
+
+        if 'missing_location' in context:
+            del context['missing_location']
+
+        context['missing_date'] = True
+
+    print(context)
     return context
 
-def add_missing_date_to_trip(context, entities):
+
+def add_return_date_to_plan(request):
+    context = request['context']
+    entities = request['entities']
+    print(entities)
 
     if 'datetime' in entities:
-        context['tripPlan'][context['currentLocation']] = entities['datetime'][0]['value']
-        context['validDate'] = True
+        return_date = entities['datetime'][0]['value'].split('.')[0]
+        context['trip_schedule'].append({
+            'start_date' : return_date
+        })
 
-        if 'missingDate' in context:
-            del context['missingDate']
-
+    print(context)
     return context
 
 
-def get_customised_premium(context, entities):
+def add_age_to_plan(request):
+    context = request['context']
+    entities = request['entities']
+    print(entities)
 
-    # data = {
-    #     'tripPlan' : context['tripPlan'],
-    #     'age' : context['age'],
-    #     'marital_status' : context['marital_status'],
-    #     'Total_Cost_of_Trip' : context['total_cost_of_trip']
-    # }
+    if 'age' in entities:
+        age = entities['age'][0]['value']
+        context['age'] = int(age.replace('years', ''))
 
-    #mocked for now // chat bot now yet fully functional
-    data = {
-        'tripPlan' : {
-            u'Wellingborough' : '2017-01-10T00:00:00.000-08:00',
-            u'Welwyn Garden City' : '2017-01-11T00:00:00.000-08:00',
-            u'Weston-super-Mare' : '2017-01-12T00:00:00.000-08:00',
-            u'Royal Tunbridge Wells' : '2017-01-13T00:00:00.000-08:00',
-        },
+    print(context)
+    return context
 
-        'age' : '20',
-        'marital_status' : 'single',
-        'Total_Cost_of_Trip' : '9999'
+
+def add_marital_status_to_plan(request):
+    context = request['context']
+    entities = request['entities']
+    print(entities)
+
+    if 'maritalStatus' in entities:
+        marital_status = entities['maritalStatus'][0]['value']
+        context['marital_status'] = marital_status
+
+    print(context)
+    return context
+
+
+def add_trip_cost_to_plan(request):
+    context = request['context']
+    entities = request['entities']
+    print(entities)
+
+    if 'amount_of_money' in entities:
+        trip_cost = entities['amount_of_money'][0]['value']
+        context['trip_cost'] = trip_cost
+
+    print(context)
+    return context
+
+
+def calculate_premium(request):
+    context = request['context']
+    trip_plan = {
+        'trip_schedule': copy.deepcopy(context['trip_schedule']),
+        'age': context['age'],
+        'marital_status': context['marital_status'],
+        'trip_cost': context['trip_cost']
     }
 
-    factored_data = person_details.format(data)
-    premium = premium_calculator.premium_calculator(factored_data)
-    facebook_custom_actions.send_plain_text_message(context['user_id'], "Your customized premium : " + str(premium))
+    premium_amount = calculate_premium_for_trip(trip_plan)
+    context['premium_amount'] = premium_amount
     return context
 
+
 def send(request, response):
-    return request['context']
+    print(response['text'])
 
 
 wit_actions = {
     'send' : send,
-    'check_insurance_type_validity' : check_insurance_type_validity,
-    'add_trip_details' : add_trip_details,
-    'add_missing_date_to_trip' : add_missing_date_to_trip,
-    'get_customised_premium' : get_customised_premium
+    'check_insurance_type_validity': check_insurance_type_validity,
+    'add_trip_plan': add_trip_plan,
+    'add_return_date_to_plan': add_return_date_to_plan,
+    'add_age_to_plan': add_age_to_plan,
+    'add_marital_status_to_plan': add_marital_status_to_plan,
+    'add_trip_cost_to_plan': add_trip_cost_to_plan,
+    'calculate_premium': calculate_premium
 }
 
 wit_client = Wit(access_token=access_tokens.wit_access_token, actions=wit_actions)
 
-def handle(session_id, message, context):
-    resp = wit_client.converse(session_id, message['message']['text'], context)
-    while not resp['type'] == 'stop':
-
-        if resp['type'] == 'msg':
-            facebook_custom_actions.send_plain_text_message(message['sender']['id'], resp['msg'])
-        elif resp['type'] == 'action':
-            entities = resp['entities'] if 'entities' in resp else None
-            context = wit_actions[resp['action']](context, entities)
-        elif resp['type'] == 'merge':
-            pass
-        else:
-            pass
-
-        resp = wit_client.converse(session_id, None, context)
-
-    return context
+# def handle(session_id, message, context):
+#     resp = wit_client.converse(session_id, message['message']['text'], context)
+#     while not resp['type'] == 'stop':
+#
+#         if resp['type'] == 'msg':
+#             facebook_custom_actions.send_plain_text_message(message['sender']['id'], resp['msg'])
+#         elif resp['type'] == 'action':
+#             entities = resp['entities'] if 'entities' in resp else None
+#             context = wit_actions[resp['action']](context, entities)
+#         elif resp['type'] == 'merge':
+#             pass
+#         else:
+#             pass
+#
+#         resp = wit_client.converse(session_id, None, context)
+#
+#     return context
 

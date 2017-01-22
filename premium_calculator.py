@@ -7,8 +7,6 @@ def preprocess_trip_plan(trip_plan):
         for x in range(len(trip_plan['trip_schedule'])):
             trip_plan['trip_schedule'][x]['start_date'] = datetime.strptime(trip_plan['trip_schedule'][x]['start_date'], '%Y-%m-%dT%H:%M:%S')
 
-        print(trip_plan)
-
         for x in range(len(trip_plan['trip_schedule']) - 1):
             trip_plan['trip_schedule'][x]['duration'] = int((trip_plan['trip_schedule'][x+1]['start_date'] - trip_plan['trip_schedule'][x]['start_date']).days)
             response = True

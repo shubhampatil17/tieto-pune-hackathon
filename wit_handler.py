@@ -2,10 +2,8 @@ from wit import Wit
 import access_tokens
 from premium_calculator import calculate_premium_for_trip
 import facebook_custom_actions
-import premium_calculator
 import facebook_custom_actions
 from main import session
-from datetime import datetime
 import copy
 
 def check_insurance_type_validity(request):
@@ -29,7 +27,7 @@ def add_trip_plan(request):
     context = request['context']
     entities = request['entities']
 
-    print(entities)
+    # print(entities)
 
     if 'trip_schedule' not in context:
         context['trip_schedule'] = []
@@ -74,14 +72,14 @@ def add_trip_plan(request):
 
         context['missing_date'] = True
 
-    print(context)
+    # print(context)
     return context
 
 
 def add_return_date_to_plan(request):
     context = request['context']
     entities = request['entities']
-    print(entities)
+    # print(entities)
 
     if 'datetime' in entities:
         return_date = entities['datetime'][0]['value'].split('.')[0]
@@ -89,46 +87,46 @@ def add_return_date_to_plan(request):
             'start_date' : return_date
         })
 
-    print(context)
+    # print(context)
     return context
 
 
 def add_age_to_plan(request):
     context = request['context']
     entities = request['entities']
-    print(entities)
+    # print(entities)
 
     if 'age' in entities:
         age = entities['age'][0]['value']
         context['age'] = int(age.replace('years', ''))
 
-    print(context)
+    # print(context)
     return context
 
 
 def add_marital_status_to_plan(request):
     context = request['context']
     entities = request['entities']
-    print(entities)
+    # print(entities)
 
     if 'maritalStatus' in entities:
         marital_status = entities['maritalStatus'][0]['value']
         context['marital_status'] = marital_status
 
-    print(context)
+    # print(context)
     return context
 
 
 def add_trip_cost_to_plan(request):
     context = request['context']
     entities = request['entities']
-    print(entities)
+    # print(entities)
 
     if 'amount_of_money' in entities:
         trip_cost = entities['amount_of_money'][0]['value']
         context['trip_cost'] = trip_cost
 
-    print(context)
+    # print(context)
     return context
 
 

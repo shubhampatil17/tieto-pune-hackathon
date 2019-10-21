@@ -73,7 +73,7 @@ unity-scope-zotero==0.1
 urllib3==1.7.1
 usb-creator==0.2.23
 webhose==0.1.5
-Werkzeug==0.11.15
+Werkzeug==0.15.3
 wit==4.2.0
 xdiagnose===3.6.3build2
 xkit==0.0.0

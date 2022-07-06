@@ -17,7 +17,7 @@ itsdangerous==0.24
 Jinja2==2.9.4
 language-selector==0.1
 louis==2.5.3
-lxml==3.3.3
+lxml==4.9.1
 Mako==0.9.1
 MarkupSafe==0.23
 mongoengine==0.11.0
